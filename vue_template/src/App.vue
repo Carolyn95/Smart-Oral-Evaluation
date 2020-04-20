@@ -12,7 +12,19 @@ export default {
   name: 'App',
   components: {
     HelloWorld
+  },
+  created: () => {
+  let recorder = new TencentSOE({
+      TransInitUrl: 'https://soe.cloud.tencent.com/cgi/transInit',
+      success() {
+        // TODO
+      },
+      error(err) {
+        console.log(err);
+      }
+      })
   }
+  
 }
 </script>
 
