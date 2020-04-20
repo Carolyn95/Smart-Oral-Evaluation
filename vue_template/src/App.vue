@@ -12,6 +12,30 @@ export default {
   name: 'App',
   components: {
     HelloWorld
+  },
+  created: () => {
+    let recorder = new TencentSOE({
+    TransInitUrl: 'http://localhose:7001/transInit',
+    success() {
+      console.log('hi');
+      // TODO
+      recorder.uploadLocalFile({
+      RefText: 'about',
+      load() {
+        console.log('文件加载完成');
+      },
+      success(res) {
+        console.log(res); // 输出测评结果
+      },
+      error(err) {
+        console.log('err', err);
+      }
+      });
+      },
+    error(err) {
+      console.log(err);
+    }
+    });
   }
 }
 </script>
