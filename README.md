@@ -1,2 +1,2 @@
-# SOE
-Smart Oral Evaluation, powered by Tencent
+# Project Template
+Project template for web applications
