@@ -32,8 +32,6 @@ const client = new SoeClient(cred, SOE_CONFIG.Region, clientProfile);
 class SOEController extends Controller {
   async transInit() {
     const { ctx } = this;
-    // ctx.body = 'hi, spoiled egg';
-
     const req = new models.TransmitOralProcessWithInitRequest();
     const buffer = fs.readFileSync(SOE_CONFIG.file);
     const params = JSON.stringify({
@@ -45,9 +43,9 @@ class SOEController extends Controller {
       SessionId: uuidv1(),
       RefText: '我吃饱了',
       WorkMode: 0,
-      EvalMode: 1,
+      EvalMode: ctx.params.EvalMode,
       ScoreCoeff: 2.5,
-      ServerType: 1,
+      ServerType: ctx.params.ServerType,
     });
     // console.log(buffer.toString('base64'));
     req.from_json_string(params);
@@ -63,15 +61,6 @@ class SOEController extends Controller {
         console.log(response.to_json_string());
       });
     });
-
-    // client.TransmitOralProcessWithInit(req, function(errMsg, response) {
-    //   if (errMsg) {
-    //     console.log(errMsg);
-    //     return;
-    //   }
-    //   ctx.body = response.to_json_string();
-    //   console.log(response.to_json_string());
-    // });
   }
 }
 
