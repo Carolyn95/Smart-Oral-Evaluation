@@ -15,7 +15,10 @@ class SOEController extends Controller {
   async transInit() {
     const { ctx } = this;
     ctx.body = 'hi, egg';
-    const cred = new Credential('AKIDgEYeZ0f8ZjwukSRPaVnfR16vVw6xsH6i', 'UifLKT3TdttoU4VLvG0WntiRSFpCPhjg');
+    const cred = new Credential(
+      'AKIDgEYeZ0f8ZjwukSRPaVnfR16vVw6xsH6i',
+      'UifLKT3TdttoU4VLvG0WntiRSFpCPhjg'
+    );
     const httpProfile = new HttpProfile();
     httpProfile.endpoint = 'soe.tencentcloudapi.com';
     const clientProfile = new ClientProfile();
