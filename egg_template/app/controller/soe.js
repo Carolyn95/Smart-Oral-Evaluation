@@ -2,9 +2,6 @@
 
 const Controller = require('egg').Controller;
 const tencentcloud = require('tencentcloud-sdk-nodejs');
-const { v1: uuidv1 } = require('uuid');
-const fs = require('fs');
-const path = require('path');
 
 
 const SoeClient = tencentcloud.soe.v20180724.Client;
@@ -19,7 +16,6 @@ const SOE_CONFIG = {
   SecretKey: 'UifLKT3TdttoU4VLvG0WntiRSFpCPhjg',
   Endpoint: 'soe.tencentcloudapi.com',
   Region: 'ap-shanghai',
-  file: path.join(__dirname, '../../wo3-chi-bao3-le.mp3'),
 };
 
 const cred = new Credential(SOE_CONFIG.SecretId, SOE_CONFIG.SecretKey);
@@ -30,37 +26,23 @@ clientProfile.httpProfile = httpProfile;
 const client = new SoeClient(cred, SOE_CONFIG.Region, clientProfile);
 
 class SOEController extends Controller {
-  async transInit() {
+  async transInit () {
     const { ctx } = this;
     const req = new models.TransmitOralProcessWithInitRequest();
-    const buffer = fs.readFileSync(SOE_CONFIG.file);
-    const params = JSON.stringify({
-      SeqId: 1,
-      IsEnd: 1,
-      VoiceFileType: 3,
-      VoiceEncodeType: 1,
-      UserVoiceData: buffer.toString('base64'),
-      SessionId: uuidv1(),
-      RefText: '我吃饱了',
-      WorkMode: 0,
-      EvalMode: ctx.params.EvalMode,
-      ScoreCoeff: 2.5,
-      ServerType: ctx.params.ServerType,
-    });
-    // console.log(buffer.toString('base64'));
+    const params = JSON.stringify(ctx.request.body);
     req.from_json_string(params);
-
-    ctx.body = await new Promise((resolve, reject) => {
-      client.TransmitOralProcessWithInit(req, function(errMsg, response) {
-        if (errMsg) {
-          console.log(errMsg);
-          reject(errMsg);
-          return;
-        }
-        resolve(response.to_json_string());
-        console.log(response.to_json_string());
-      });
-    });
+    ctx.body = {
+      Response: await new Promise(resolve => {
+        client.TransmitOralProcessWithInit(req, function (errMsg, response) {
+          console.log(errMsg, response);
+          if (errMsg) {
+            console.log(errMsg);
+          }
+          resolve(response);
+          console.log(response, response.to_json_string());
+        });
+      }),
+    };
   }
 }
 
