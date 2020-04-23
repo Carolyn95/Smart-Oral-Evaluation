@@ -25,6 +25,9 @@
     "env": {
       "node": true
     },
+    "globals": {
+      "TencentSOE": true
+    },
     "extends": [
       "plugin:vue/essential",
       "eslint:recommended"
