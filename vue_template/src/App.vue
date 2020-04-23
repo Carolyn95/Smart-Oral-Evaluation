@@ -20,21 +20,32 @@
           <span>{{ switchCode("questionDesc") }}</span>
           <el-button type="danger" icon="el-icon-close" circle size="mini"></el-button>
         </div>
-        <div class="card-ques">老师好</div>
+        <div class="card-ques">{{question.list[question.index]}}</div>
         <div class="card-mic">
-          <el-button type="primary" icon="el-icon-microphone" circle size="default"></el-button>
+          <el-button
+            type="primary"
+            icon="el-icon-microphone"
+            circle
+            size="default"
+            @click="startRecordAudio"
+          ></el-button>
           <!-- el-icon-turn-off-microphone -->
         </div>
         <div class="card-button-group">
-          <el-button type="primary">Previous Page</el-button>
-          <el-button type="primary" disabled>Next Page</el-button>
+          <el-button type="primary" :disabled="question.index === 0" @click="prevPage">Previous Page</el-button>
+          <el-button
+            type="primary"
+            :disabled="question.index === (question.length - 1)"
+            @click="nextPage"
+          >Next Page</el-button>
         </div>
       </el-card>
     </div>
   </div>
 </template>
 <script>
-
+import question_list from "./question_list.js"
+console.log(question_list)
 export default {
   name: 'App',
   data () {
@@ -59,9 +70,20 @@ export default {
       },
       recorder: null,
       loading: false,
-      step: '2',
+      step: '1',
+      question: {
+        list: null,
+        index: 0,
+        length: 0,
+      }
+
     }
   },
+  // created () {
+  //   // console.log(question_list);
+  //   this.question.list = (question_list["0__1"] && question_list["0__1"]["text"].sort(() => Math.random() - 0.5)) || [];
+  //   this.question.length = this.question.list.length;
+  // },
   methods: {
     switchCode: function (name) {
       let lang = this.lang;
@@ -84,7 +106,11 @@ export default {
         success () {
           vm.loading = false;
           vm.step = '2';
-          console.log('啊妈我得咗！！！')
+          // console.log('啊妈我得咗！！！')
+          let search_key = serverType + "__" + evalMode;
+          // function () => {return Math.random() - 0.5 }
+          vm.question.list = (question_list[search_key] && question_list[search_key]["text"].sort(() => Math.random() - 0.5)) || [];
+          vm.question.length = vm.question.list.length
         },
         error (err) {
           console.log(err);
@@ -118,7 +144,7 @@ export default {
    * }
    */
       this.recorder.start({
-        RefText: 'about',
+        RefText: this.question.list[this.question.index],
         error: function (err) {
           console.log(err);
         },
@@ -129,6 +155,17 @@ export default {
           console.log(res);
         }
       });
+    },
+    nextPage () {
+      if (this.question.index < this.question.length) {
+
+        this.question.index += 1;
+      }
+    },
+    prevPage () {
+      if (this.question.index > 0) {
+        this.question.index -= 1;
+      }
     },
     stopRecordAudio () {
       /**
