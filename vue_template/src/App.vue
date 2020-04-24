@@ -30,6 +30,12 @@
             @click="startRecordAudio"
           ></el-button>
           <!-- el-icon-turn-off-microphone -->
+          <el-rate
+            v-if="question.score[question.index]"
+            v-model="question.score[question.index]['SuggestedScore']"
+            :colors="['#99A9BF', '#F7BA2A', '#FF9900']"
+            class="score-padding"
+          ></el-rate>
         </div>
         <div class="card-button-group">
           <el-button type="primary" :disabled="question.index === 0" @click="prevPage">Previous Page</el-button>
@@ -75,8 +81,10 @@ export default {
         list: null,
         index: 0,
         length: 0,
-      }
-
+        isRecording: false,
+        timeout_task: null,
+        score: [],
+      },
     }
   },
   // created () {
@@ -110,7 +118,7 @@ export default {
           let search_key = serverType + "__" + evalMode;
           // function () => {return Math.random() - 0.5 }
           vm.question.list = (question_list[search_key] && question_list[search_key]["text"].sort(() => Math.random() - 0.5)) || [];
-          vm.question.length = vm.question.list.length
+          vm.question.length = vm.question.list.length;
         },
         error (err) {
           console.log(err);
@@ -143,18 +151,27 @@ export default {
    *   success: function() {}, // 录音1分钟自动测评回调（微信端），建议填写，否则超时后无法获取测评结果
    * }
    */
-      this.recorder.start({
-        RefText: this.question.list[this.question.index],
-        error: function (err) {
-          console.log(err);
-        },
-        complete: function () {
-          console.log('录音超过1分钟未停止触发此回调')
-        },
-        success: function (res) {
-          console.log(res);
-        }
-      });
+      if (this.question.isRecording) {
+        this.stopRecordAudio()
+      } else {
+        let duration = this.selection.evalMode ? 20 * 1000 : 10 * 1000;
+        // let timeout_task;
+        this.question.isRecording = true;
+        this.recorder.start({
+          RefText: this.question.list[this.question.index],
+          error: function (err) {
+            console.log(err);
+            this.stopRecordAudio();
+          },
+          // complete: function () {
+          //   console.log('录音超过1分钟未停止触发此回调');
+          // },
+          // success: function (res) {
+          //   console.log(res);
+          // }
+        });
+        this.question.timeout_task = setTimeout(() => { this.stopRecordAudio() }, duration);
+      }
     },
     nextPage () {
       if (this.question.index < this.question.length) {
@@ -175,6 +192,11 @@ export default {
    *   error: function() {} // 失败回调
    * }
    */
+      let vm = this;
+      if (!this.question.isRecording) return;
+      this.question.isRecording = false;
+      // console.log(err);
+      clearTimeout(this.question.timeout_task);
       this.recorder.stop({
         success (res) {
           // 获取blob对象，创建audio进行回放 (PC端)
@@ -186,6 +208,7 @@ export default {
           document.body.appendChild(audio);
           // 输出测评结果
           console.log(res);
+          vm.$set(vm.question.score, vm.question.index, res)
         },
         error (err) {
           console.log(err);
@@ -230,6 +253,9 @@ export default {
     }
     .card-ques {
       padding-top: 60px;
+    }
+    .score-padding {
+      padding-top: 22px;
     }
   }
 }
