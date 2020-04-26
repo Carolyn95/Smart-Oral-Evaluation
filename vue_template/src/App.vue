@@ -24,26 +24,31 @@
         </div>
         <div class="card-ques">{{question.list[question.index]}}</div>
         <div class="card-mic">
-          <div class="card-animate" @click="startRecordAudio">
-            <svg viewBox="0 0 200 200" circular class="animate-viewbox">
-              <circle
-                cx="98"
-                cy="100"
-                r="92"
-                fill="none"
-                :class="{test:question.isRecording}"
-                style="stroke-width: 10px;stroke: #409eff87;transition: all 5s linear 0s;stroke-dashoffset: 578;stroke-dasharray: 578;"
-              />
-            </svg>
-            <el-button
-              type="primary"
-              icon="el-icon-microphone"
-              circle
-              size="default"
-              style="margin: 7px;"
-            ></el-button>
-            <!-- el-icon-turn-off-microphone -->
-          </div>
+          <!-- @click="startRecordAudio" -->
+          <svg circular class="card-animate" style="
+    width: 68px;
+    height: 68px;
+">
+            <circle
+              cx="33.5"
+              cy="34"
+              r="30"
+              fill="none"
+              :class="{test:question.isRecording}"
+              style="stroke-width: 3px; stroke: rgba(64, 158, 255, 0.53); transition: all 5s linear 0s; stroke-dashoffset: 188.5; stroke-dasharray: 188.5;"
+            />
+          </svg>
+          <el-button
+            type="primary"
+            icon="el-icon-microphone"
+            circle
+            size="default"
+            style="margin: 7px;position: relative"
+            @click="startRecordAudio"
+          ></el-button>
+          <!-- el-icon-turn-off-microphone -->
+        </div>
+        <div>
           <el-rate
             v-if="question.score[question.index]"
             v-model="question.score[question.index]['SuggestedScore']"
@@ -259,7 +264,7 @@ export default {
       margin-top: 50px;
     }
     .card-mic {
-      padding-top: 70px;
+      margin-top: 70px;
       .el-button {
         padding: 10px;
         font-size: 32px;
@@ -273,15 +278,12 @@ export default {
     }
     .test {
       stroke-dashoffset: 0 !important;
+      transition: all 5s linear 0s;
+      stroke-dasharray: 188.5;
     }
     .card-animate {
       display: inline-block;
-      position: relative;
-    }
-    .animate-viewbox {
       position: absolute;
-      left: 0px;
-      top: 0px;
     }
   }
 }

@@ -22,31 +22,35 @@
           <span>{{ switchCode("questionDesc") }}</span>
           <el-button type="danger" icon="el-icon-close" circle size="mini"></el-button>
         </div>
-        <div class="card-ques">{{question.list[question.index]}}</div>
+        <div class="card-ques">{{question.list && question.list[question.index]}}</div>
         <div class="card-mic">
-          <div class="card-animate">
-            <!-- @click="startRecordAudio" -->
-            <!--  width="200" height="200" -->
-            <svg circular class="animate-svg">
+          <figure
+            class="card-animate"
+            :class="{'recording-state':question.isRecording}"
+            @click="startRecordAudio"
+          >
+            <figcaption>
+              <el-button type="primary" icon="el-icon-microphone" circle size="default"></el-button>
+            </figcaption>
+            <!-- 圈圈的大小，68*69主要是按照按钮的大小设置 -->
+            <svg width="68" height="69">
+              <!-- 定义变量，这里定义了渐变的颜色，用于圈圈边框的颜色做一个渐变颜色，参考circle的stroke=url(#linear),#linear指的是这个id=linear的linearGradient -->
+              <defs>
+                <linearGradient id="linear" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#409effcc" />
+                  <stop offset="100%" stop-color="#409eff87" />
+                </linearGradient>
+              </defs>
               <circle
-                cx="60"
-                cy="60"
-                r="50"
-                fill="none"
-                style="stroke-width: 10px;stroke: #409eff87;transition: all 5s linear 0s;stroke-dashoffset: 578;stroke-dasharray: 578;"
+                cx="34"
+                cy="34"
+                r="31"
+                stroke="url(#linear)"
+                class="outer"
+                :style="{'animation-duration': '10000ms'}"
               />
-              <!-- :class="{test:question.isRecording}" -->
             </svg>
-
-            <el-button
-              type="primary"
-              icon="el-icon-microphone"
-              circle
-              size="default"
-              style="margin: 7px;"
-            ></el-button>
-            <!-- el-icon-turn-off-microphone -->
-          </div>
+          </figure>
           <el-rate
             v-if="question.score[question.index]"
             v-model="question.score[question.index]['SuggestedScore']"
@@ -192,7 +196,6 @@ export default {
     },
     nextPage () {
       if (this.question.index < this.question.length) {
-
         this.question.index += 1;
       }
     },
@@ -280,11 +283,63 @@ export default {
     .card-animate {
       display: inline-block;
       position: relative;
-    }
-    .animate-svg {
-      position: absolute;
-      left: 0px;
-      top: 0px;
+
+      figcaption {
+        // 因为圈圈是absolute，脱离了文档流，会显示在button上面，导致button的交互效果没了，设置relative跟z-index让按钮显示在最上层
+        position: relative;
+        z-index: 10;
+        .el-button {
+          margin: 7px; //外边距撑开父容器，让父容器预留位置，即圈圈外边框的空间
+        }
+      }
+
+      // 圈圈的父容器定义，主要是位置的定义
+      svg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        .outer {
+          fill: transparent;
+          // stroke: linear-gradient(90deg, #e2b32d, #409eff87);
+          stroke-width: 3px;
+          stroke-dasharray: 194.68;
+          stroke-dashoffset: 194.68;
+        }
+      }
+
+      // 点击时的圈圈动画以及按钮的背景颜色变化动画
+      &.recording-state {
+        .outer {
+          transition: stroke-dashoffset 1s;
+          // animation: show100 2s infinite;
+          animation-name: show100;
+          animation-iteration-count: 1;
+        }
+
+        .el-button {
+          animation-name: btnflash;
+          animation-iteration-count: 1;
+          animation-duration: 10s;
+        }
+      }
+      @keyframes show100 {
+        from {
+          stroke-dashoffset: 194.68;
+        }
+        to {
+          stroke-dashoffset: 0;
+        }
+      }
+      @keyframes btnflash {
+        from {
+          background-color: #8896b3;
+          border-color: #8896b3;
+        }
+        to {
+          background-color: #409eff;
+          border-color: #409eff;
+        }
+      }
     }
   }
 }

@@ -1,0 +1,45 @@
+<html>
+
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+</head>
+
+<body>
+    <div id="app">
+        {{ message }}
+        <template v-for="(name,idx) in audioList">
+            <button :key="idx" @click="playAudio(name)" style="display: block;margin-bottom:10px;">{{name}}</button>
+        </template>
+        <audio id="audio" src=""></audio>
+    </div>
+
+    <script>
+        var app = new Vue({
+            el: '#app',
+            data: {
+                message: 'Hello Vue!',
+                audioList: [
+                    'charge', 'reward', 'withdraw'
+                ],
+                audioDom: document.querySelector('#audio')
+            },
+            methods: {
+                playAudio(name) {
+                    this.audioDom.src = `./assets/${name}.mp3`//切换音频的src资源
+                    this.audioDom.play().catch((e) => {
+                        console.log(e)
+                        alert('播放失败' + e)
+                    })//播放
+
+
+                    // 当前音频播放完毕，修改音频播放状态，并且触发队列下一个音频播放
+                    this.audioDom.onended = async (event) => { //
+                        alert('播放完毕')
+                    }
+                }
+            }
+        })
+    </script>
+</body>
+
+</html>
