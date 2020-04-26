@@ -24,17 +24,20 @@
         </div>
         <div class="card-ques">{{question.list[question.index]}}</div>
         <div class="card-mic">
-          <div class="card-animate" @click="startRecordAudio">
-            <svg viewBox="0 0 200 200" circular class="animate-viewbox">
+          <div class="card-animate">
+            <!-- @click="startRecordAudio" -->
+            <!--  width="200" height="200" -->
+            <svg circular class="animate-svg">
               <circle
-                cx="98"
-                cy="100"
-                r="92"
+                cx="60"
+                cy="60"
+                r="50"
                 fill="none"
-                :class="{test:question.isRecording}"
                 style="stroke-width: 10px;stroke: #409eff87;transition: all 5s linear 0s;stroke-dashoffset: 578;stroke-dasharray: 578;"
               />
+              <!-- :class="{test:question.isRecording}" -->
             </svg>
+
             <el-button
               type="primary"
               icon="el-icon-microphone"
@@ -278,7 +281,7 @@ export default {
       display: inline-block;
       position: relative;
     }
-    .animate-viewbox {
+    .animate-svg {
       position: absolute;
       left: 0px;
       top: 0px;
