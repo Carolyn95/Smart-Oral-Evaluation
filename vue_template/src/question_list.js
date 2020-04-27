@@ -1,7 +1,7 @@
 export default {
     "1__0": {
         "lang": "1",
-        "type": "0",
+        "type": "1",
         "text": ["苹果", "梨子", "香蕉", "橙子", "草莓", "西瓜", "橘子", "木瓜", "蓝莓",
             "葡萄", "桃子", "凤梨", "火龙果", "芒果", "樱桃", "李子", "杏子", "密瓜", "龙眼", "榴莲", "荔枝"],
     },
@@ -12,8 +12,8 @@ export default {
             "Grape", "Peach", "Pineapple", "Dragon fruit", "Mango", "Cherry", "Plum", "Apricot", "Honeydew melon", "Longan", "Durian", "Lychee"],
     },
     "1__1": {
-        "lang": "0",
-        "type": "0",
+        "lang": "1",
+        "type": "1",
         "text": ["我吃饱了",
             "我喜欢狗",
             "我不喜欢猫",
@@ -37,7 +37,7 @@ export default {
     },
     "0__1": {
         "lang": "0",
-        "type": "0",
+        "type": "1",
         "text": ["I like reading",
             "I like apple",
             "It is raining",

@@ -140,7 +140,7 @@ export default {
         // TransInitUrl: 'https://soe.cloud.tencent.com/cgi/transInit',
         TransInitUrl: 'http://localhost:7001/transInit',
         ServerType: serverType,
-        EvalMode: evalMode,
+        EvalMode: serverType ? 1 : evalMode,
         success () {
           vm.loading = false;
           vm.step = '2';
@@ -316,7 +316,6 @@ export default {
           margin: 7px; //外边距撑开父容器，让父容器预留位置，即圈圈外边框的空间
         }
       }
-
       // 圈圈的父容器定义，主要是位置的定义
       svg {
         position: absolute;
