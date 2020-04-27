@@ -1,6 +1,6 @@
 <template>
   <div id="app" v-loading="loading">
-    <div v-if="step === '1'">
+    <div v-if="step === '1'" class="initPage">
       <el-radio-group v-model="selection.ServerType">
         <el-radio-button :label="0">English</el-radio-button>
         <el-radio-button :label="1">中文</el-radio-button>
@@ -20,59 +20,76 @@
       <el-card class="box-card">
         <div slot="header" class="card-header">
           <span>{{ switchCode("questionDesc") }}</span>
-          <el-button type="danger" icon="el-icon-close" circle size="mini"></el-button>
+          <el-button type="danger" icon="el-icon-close" circle size="mini" @click="exitTest"></el-button>
         </div>
-        <div class="card-ques">{{question.list && question.list[question.index]}}</div>
-        <div class="card-mic">
-          <figure
-            class="card-animate"
-            :class="{'recording-state':question.isRecording}"
-            @click="startRecordAudio"
-          >
-            <figcaption>
-              <el-button type="primary" icon="el-icon-microphone" circle size="default"></el-button>
-            </figcaption>
-            <!-- 圈圈的大小，68*69主要是按照按钮的大小设置 -->
-            <svg width="68" height="69">
-              <!-- 定义变量，这里定义了渐变的颜色，用于圈圈边框的颜色做一个渐变颜色，参考circle的stroke=url(#linear),#linear指的是这个id=linear的linearGradient -->
-              <defs>
-                <linearGradient id="linear" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stop-color="#409effcc" />
-                  <stop offset="100%" stop-color="#409eff87" />
-                </linearGradient>
-              </defs>
-              <circle
-                cx="34"
-                cy="34"
-                r="31"
-                stroke="url(#linear)"
-                class="outer"
-                :style="{'animation-duration': '10000ms'}"
-              />
-            </svg>
-          </figure>
-          <div>
-            <el-button
-              type="success"
-              circle
-              @click="playAudio(question.score[question.index])"
-            >{{question.index}}</el-button>
+        <template v-for="(item,idx) in question['list']">
+          <div v-if="item && idx === question['index']" :key="'ques'+idx">
+            <div class="card-ques">{{item}}</div>
+            <div class="card-mic">
+              <figure
+                class="card-animate"
+                :class="{'recording-state':question.isRecording}"
+                @click="startRecordAudio"
+              >
+                <figcaption>
+                  <el-button type="primary" icon="el-icon-microphone" circle size="default"></el-button>
+                </figcaption>
+                <!-- 圈圈的大小，68*69主要是按照按钮的大小设置 -->
+                <svg width="68" height="69">
+                  <!-- 定义变量，这里定义了渐变的颜色，用于圈圈边框的颜色做一个渐变颜色，参考circle的stroke=url(#linear),#linear指的是这个id=linear的linearGradient -->
+                  <defs>
+                    <linearGradient id="linear" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stop-color="#409effcc" />
+                      <stop offset="100%" stop-color="#409eff87" />
+                    </linearGradient>
+                  </defs>
+                  <circle
+                    cx="34"
+                    cy="34"
+                    r="31"
+                    stroke="url(#linear)"
+                    class="outer"
+                    :style="{'animation-duration': '10000ms'}"
+                  />
+                </svg>
+              </figure>
+              <div v-loading="question.loading">
+                <el-button
+                  v-if="question.score[idx]"
+                  type="success"
+                  circle
+                  @click="playAudio(question.score[idxx])"
+                  icon="el-icon-caret-right"
+                ></el-button>
+                <audio id="audio" src></audio>
+                <el-rate
+                  v-if="question.score[idx]"
+                  :value="Number((question.score[idx]['SuggestedScore']/20).toFixed(2))"
+                  :colors="['#99A9BF', '#F7BA2A', '#FF9900']"
+                  class="score-padding"
+                  disabled
+                  allow-half
+                  show-score
+                  score-template="{value} points"
+                ></el-rate>
+              </div>
+            </div>
           </div>
-          <audio id="audio" src></audio>
-          <el-rate
-            v-if="question.score[question.index]"
-            v-model="question.score[question.index]['SuggestedScore']"
-            :colors="['#99A9BF', '#F7BA2A', '#FF9900']"
-            class="score-padding"
-          ></el-rate>
-        </div>
+        </template>
         <div class="card-button-group">
-          <el-button type="primary" :disabled="question.index === 0" @click="prevPage">Previous Page</el-button>
+          <el-button
+            type="primary"
+            :disabled="question.index === 0"
+            @click="prevPage"
+            style="min-width:100px;"
+          >{{ switchCode("prevPage") }}</el-button>
+          <el-button type="text">{{`${question.index+1} / ${question.length}`}}</el-button>
           <el-button
             type="primary"
             :disabled="question.index === (question.length - 1)"
             @click="nextPage"
-          >Next Page</el-button>
+            style="min-width:100px;"
+          >{{ switchCode("nextPage") }}</el-button>
         </div>
       </el-card>
     </div>
@@ -94,13 +111,17 @@ export default {
           "word": "Word",
           "sentence": "Sentence",
           "buttonText": "Start Evaluation",
-          "questionDesc": "Please say the word/sentece in English"
+          "questionDesc": "Please say the word/sentece in English",
+          "prevPage": "Previous",
+          "nextPage": "Next"
         },
         1: {
           "word": "单词",
           "sentence": "句子",
           "buttonText": "开始评测",
-          "questionDesc": "请用中文说出屏幕显示的内容"
+          "questionDesc": "请用中文说出屏幕显示的内容",
+          "prevPage": "上一题",
+          "nextPage": "下一题"
         },
       },
       recorder: null,
@@ -114,14 +135,10 @@ export default {
         timeout_task: null,
         score: [],
         audioDom: null,
+        loading: false,
       },
     }
   },
-  // created () {
-  //   // console.log(question_list);
-  //   this.question.list = (question_list["0__1"] && question_list["0__1"]["text"].sort(() => Math.random() - 0.5)) || [];
-  //   this.question.length = this.question.list.length;
-  // },
   methods: {
     switchCode: function (name) {
       let lang = this.lang;
@@ -157,7 +174,6 @@ export default {
       });
     },
     uploadAudioRecording () {
-      // TODO
       this.recorder.uploadLocalFile({
         RefText: 'about',
         load () {
@@ -207,11 +223,13 @@ export default {
       if (this.question.index < this.question.length) {
         this.question.index += 1;
       }
+      this.show = false;
     },
     prevPage () {
       if (this.question.index > 0) {
         this.question.index -= 1;
       }
+      this.show = false;
     },
     stopRecordAudio () {
       /**
@@ -224,22 +242,16 @@ export default {
       let vm = this;
       if (!this.question.isRecording) return;
       this.question.isRecording = false;
-      // console.log(err);
+      vm.question.loading = true;
       clearTimeout(this.question.timeout_task);
       this.recorder.stop({
         success (res) {
-          // 获取blob对象，创建audio进行回放 (PC端)
-          // let audio = document.createElement('audio');
-          // audio.setAttribute('controls', '');
-          // let blobUrl = URL.createObjectURL(res.blob);
-          // audio.src = blobUrl
-          // let blobUrl = URL.createObjectURL(res.blob);
-          // document.body.appendChild(audio);
-          // 输出测评结果
+          vm.question.loading = false;
           console.log(res);
           vm.$set(vm.question.score, vm.question.index, res)
         },
         error (err) {
+          vm.question.loading = false;
           console.log(err);
         }
       });
@@ -259,6 +271,12 @@ export default {
         alert('播放完毕')
       }
     },
+    exitTest () {
+      this.step = '1';
+      this.question.list = null;
+      this.question.index = 0;
+      this.question.score = [];
+    },
   },
 }
 </script>
@@ -271,6 +289,30 @@ export default {
   text-align: center;
   color: #2c3e50;
   margin-top: 60px;
+}
+.initPage {
+  .el-radio-button {
+    width: 245px;
+    height: 160px;
+    margin: 25px;
+    margin-bottom: 30px;
+    span.el-radio-button__inner {
+      font-size: 16px;
+      width: 100%;
+      height: 100%;
+      border-radius: 4px;
+      border-left: 0.6px solid #dcdfe6;
+      display: flex;
+      justify-content: center;
+      flex-direction: column;
+    }
+  }
+  .el-button {
+    width: 230px;
+    height: 50px;
+    margin-top: 30px;
+    font-size: 13px;
+  }
 }
 .question-card {
   display: flex;
