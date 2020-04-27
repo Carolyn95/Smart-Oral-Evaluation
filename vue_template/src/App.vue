@@ -22,33 +22,43 @@
           <span>{{ switchCode("questionDesc") }}</span>
           <el-button type="danger" icon="el-icon-close" circle size="mini"></el-button>
         </div>
-        <div class="card-ques">{{question.list[question.index]}}</div>
+        <div class="card-ques">{{question.list && question.list[question.index]}}</div>
         <div class="card-mic">
-          <!-- @click="startRecordAudio" -->
-          <svg circular class="card-animate" style="
-    width: 68px;
-    height: 68px;
-">
-            <circle
-              cx="33.5"
-              cy="34"
-              r="30"
-              fill="none"
-              :class="{test:question.isRecording}"
-              style="stroke-width: 3px; stroke: rgba(64, 158, 255, 0.53); transition: all 5s linear 0s; stroke-dashoffset: 188.5; stroke-dasharray: 188.5;"
-            />
-          </svg>
-          <el-button
-            type="primary"
-            icon="el-icon-microphone"
-            circle
-            size="default"
-            style="margin: 7px;position: relative"
+          <figure
+            class="card-animate"
+            :class="{'recording-state':question.isRecording}"
             @click="startRecordAudio"
-          ></el-button>
-          <!-- el-icon-turn-off-microphone -->
-        </div>
-        <div>
+          >
+            <figcaption>
+              <el-button type="primary" icon="el-icon-microphone" circle size="default"></el-button>
+            </figcaption>
+            <!-- 圈圈的大小，68*69主要是按照按钮的大小设置 -->
+            <svg width="68" height="69">
+              <!-- 定义变量，这里定义了渐变的颜色，用于圈圈边框的颜色做一个渐变颜色，参考circle的stroke=url(#linear),#linear指的是这个id=linear的linearGradient -->
+              <defs>
+                <linearGradient id="linear" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#409effcc" />
+                  <stop offset="100%" stop-color="#409eff87" />
+                </linearGradient>
+              </defs>
+              <circle
+                cx="34"
+                cy="34"
+                r="31"
+                stroke="url(#linear)"
+                class="outer"
+                :style="{'animation-duration': '10000ms'}"
+              />
+            </svg>
+          </figure>
+          <div>
+            <el-button
+              type="success"
+              circle
+              @click="playAudio(question.score[question.index])"
+            >{{question.index}}</el-button>
+          </div>
+          <audio id="audio" src></audio>
           <el-rate
             v-if="question.score[question.index]"
             v-model="question.score[question.index]['SuggestedScore']"
@@ -103,6 +113,7 @@ export default {
         isRecording: false,
         timeout_task: null,
         score: [],
+        audioDom: null,
       },
     }
   },
@@ -194,7 +205,6 @@ export default {
     },
     nextPage () {
       if (this.question.index < this.question.length) {
-
         this.question.index += 1;
       }
     },
@@ -219,12 +229,12 @@ export default {
       this.recorder.stop({
         success (res) {
           // 获取blob对象，创建audio进行回放 (PC端)
-          let audio = document.createElement('audio');
-          audio.setAttribute('controls', '');
-          let blobUrl = URL.createObjectURL(res.blob);
-          audio.src = blobUrl
+          // let audio = document.createElement('audio');
+          // audio.setAttribute('controls', '');
           // let blobUrl = URL.createObjectURL(res.blob);
-          document.body.appendChild(audio);
+          // audio.src = blobUrl
+          // let blobUrl = URL.createObjectURL(res.blob);
+          // document.body.appendChild(audio);
           // 输出测评结果
           console.log(res);
           vm.$set(vm.question.score, vm.question.index, res)
@@ -233,7 +243,22 @@ export default {
           console.log(err);
         }
       });
-    }
+    },
+    playAudio (response) {
+      if (!response) { return; }
+      if (!this.question.audioDom) { this.question.audioDom = document.querySelector("#audio") }
+      let audioDom = this.question.audioDom;
+      // console.log(audioDom, URL.createObjectURL(response.blob));
+      audioDom.src = URL.createObjectURL(response.blob); //切换音频的src资源
+      audioDom.play().catch((e) => {
+        console.log(e)
+        alert('播放失败' + e)
+      })//播放
+      // 当前音频播放完毕，修改音频播放状态，并且触发队列下一个音频播放
+      audioDom.onended = async () => { //
+        alert('播放完毕')
+      }
+    },
   },
 }
 </script>
@@ -264,7 +289,7 @@ export default {
       margin-top: 50px;
     }
     .card-mic {
-      margin-top: 70px;
+      padding-top: 70px;
       .el-button {
         padding: 10px;
         font-size: 32px;
@@ -278,12 +303,67 @@ export default {
     }
     .test {
       stroke-dashoffset: 0 !important;
-      transition: all 5s linear 0s;
-      stroke-dasharray: 188.5;
     }
     .card-animate {
       display: inline-block;
-      position: absolute;
+      position: relative;
+
+      figcaption {
+        // 因为圈圈是absolute，脱离了文档流，会显示在button上面，导致button的交互效果没了，设置relative跟z-index让按钮显示在最上层
+        position: relative;
+        z-index: 10;
+        .el-button {
+          margin: 7px; //外边距撑开父容器，让父容器预留位置，即圈圈外边框的空间
+        }
+      }
+
+      // 圈圈的父容器定义，主要是位置的定义
+      svg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        .outer {
+          fill: transparent;
+          // stroke: linear-gradient(90deg, #e2b32d, #409eff87);
+          stroke-width: 3px;
+          stroke-dasharray: 194.68;
+          stroke-dashoffset: 194.68;
+        }
+      }
+
+      // 点击时的圈圈动画以及按钮的背景颜色变化动画
+      &.recording-state {
+        .outer {
+          transition: stroke-dashoffset 1s;
+          // animation: show100 2s infinite;
+          animation-name: show100;
+          animation-iteration-count: 1;
+        }
+
+        .el-button {
+          animation-name: btnflash;
+          animation-iteration-count: 1;
+          animation-duration: 10s;
+        }
+      }
+      @keyframes show100 {
+        from {
+          stroke-dashoffset: 194.68;
+        }
+        to {
+          stroke-dashoffset: 0;
+        }
+      }
+      @keyframes btnflash {
+        from {
+          background-color: #8896b3;
+          border-color: #8896b3;
+        }
+        to {
+          background-color: #409eff;
+          border-color: #409eff;
+        }
+      }
     }
   }
 }
