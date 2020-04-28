@@ -97,7 +97,8 @@
 </template>
 <script>
 import question_list from "./question_list.js"
-console.log(question_list)
+import { eleMessage } from "./utils/tools.js"
+// console.log(question_list)
 export default {
   name: 'App',
   data () {
@@ -170,6 +171,7 @@ export default {
         error (err) {
           console.log(err);
           vm.loading = false;
+          eleMessage({ message: err.msg, type: 'error' });//错误信息提示
         }
       });
     },
@@ -189,14 +191,15 @@ export default {
     },
     startRecordAudio () {
       /**
-   * 开始录音
-   * @param {
-   *   RefText: 'string', // 测评文本，必填
-   *   error: function() {}, // 录音过程出现错误回调，选填
-   *   complete: function() {}, // 录音1分钟自动停止回调（微信端），选填
-   *   success: function() {}, // 录音1分钟自动测评回调（微信端），建议填写，否则超时后无法获取测评结果
-   * }
-   */
+       * 开始录音
+       * @param {
+       *   RefText: 'string', // 测评文本，必填
+       *   error: function() {}, // 录音过程出现错误回调，选填
+       *   complete: function() {}, // 录音1分钟自动停止回调（微信端），选填
+       *   success: function() {}, // 录音1分钟自动测评回调（微信端），建议填写，否则超时后无法获取测评结果
+       * }
+      */
+      let vm = this
       if (this.question.isRecording) {
         this.stopRecordAudio()
       } else {
@@ -207,7 +210,8 @@ export default {
           RefText: this.question.list[this.question.index],
           error: function (err) {
             console.log(err);
-            this.stopRecordAudio();
+            vm.stopRecordAudio();
+            // eleMessage({ message: err.msg, type: 'error' });//错误信息提示
           },
           // complete: function () {
           //   console.log('录音超过1分钟未停止触发此回调');
@@ -240,7 +244,7 @@ export default {
    * }
    */
       let vm = this;
-      if (!this.question.isRecording) return;
+      // if (!this.question.isRecording) return;
       this.question.isRecording = false;
       vm.question.loading = true;
       clearTimeout(this.question.timeout_task);
@@ -252,6 +256,7 @@ export default {
         },
         error (err) {
           vm.question.loading = false;
+          // eleMessage({ message: err.msg, type: 'error' });//错误信息提示
           console.log(err);
         }
       });
